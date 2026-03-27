@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.env.local
+.DS_Store
+package-lock.json
+client/node_modules/
+client/dist/
+server/node_modules/
