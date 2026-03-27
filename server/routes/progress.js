@@ -308,13 +308,6 @@ router.put('/:userId/lessons/:lessonId/complete', auth, async (req, res) => {
     );
 
     if (parseInt(completedInTrack.rows[0].count) === trackLessonIds.length) {
-      const trackBadge = await pool.query(
-        `SELECT id FROM badges WHERE badge_type = 'track' AND requirement_id IN (
-           SELECT id FROM lessons WHERE track = $1 LIMIT 1
-         )`,
-        [track]
-      );
-      // Find track badge by name convention
       const trackBadgeByName = await pool.query(
         `SELECT id FROM badges WHERE badge_type = 'track' AND name ILIKE $1`,
         [`%${track}%`]

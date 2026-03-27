@@ -28,20 +28,10 @@ export default function LessonPage() {
   useEffect(() => {
     const fetchLesson = async () => {
       try {
-        const [lessonRes, quizRes] = await Promise.allSettled([
-          lessonsAPI.getLesson(id),
-          progressAPI.getQuiz(id),
-        ]);
-        if (lessonRes.status === 'fulfilled') {
-          setLesson(lessonRes.value.data);
-        } else {
-          setError('Lesson not found.');
-        }
-        if (quizRes.status === 'fulfilled') {
-          setQuiz(quizRes.value.data);
-        }
+        const lessonRes = await lessonsAPI.getLesson(id);
+        setLesson(lessonRes.data);
       } catch {
-        setError('Failed to load lesson.');
+        setError('Lesson not found.');
       } finally {
         setLoading(false);
       }
@@ -52,22 +42,20 @@ export default function LessonPage() {
   useEffect(() => {
     if (lesson && user) {
       progressAPI.startLesson(user.id, id).catch(() => {});
+      progressAPI.getQuiz(user.id, id).then((r) => setQuiz(r.data)).catch(() => {});
     }
   }, [lesson, user, id]);
 
   const handleStartQuiz = () => setStage(STAGES.QUIZ);
 
-  const handleQuizPassed = async (score) => {
+  const handleQuizPassed = (score) => {
     setQuizScore(score);
-    try {
-      await progressAPI.submitQuiz({ user_id: user.id, lesson_id: id, score, passed: true });
-    } catch {}
     setStage(STAGES.SUMMARY);
   };
 
   const handleComplete = async () => {
     try {
-      const res = await progressAPI.completeLesson({ user_id: user.id, lesson_id: id });
+      const res = await progressAPI.completeLesson(user.id, id);
       if (res.data?.badge) setEarnedBadge(res.data.badge);
     } catch {}
     setStage(STAGES.COMPLETED);

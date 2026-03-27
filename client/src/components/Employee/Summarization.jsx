@@ -23,7 +23,7 @@ export default function Summarization({ lesson, lessonId, userId, onComplete }) 
     setLoading(true);
     setError('');
     try {
-      await progressAPI.submitSummary({ user_id: userId, lesson_id: lessonId, summary });
+      await progressAPI.submitSummary(userId, lessonId, summary);
       setSubmitted(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to submit summary. Please try again.');

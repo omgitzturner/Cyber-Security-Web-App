@@ -37,7 +37,7 @@ export const usersAPI = {
   createUser: (data) => api.post('/api/users', data),
   updateUser: (id, data) => api.put(`/api/users/${id}`, data),
   deleteUser: (id) => api.delete(`/api/users/${id}`),
-  getUsersByDept: (dept) => api.get(`/api/users/department/${dept}`),
+  getUsersByDept: (dept) => api.get(`/api/users/departments/${dept}/users`),
 };
 
 // Lessons
@@ -51,19 +51,19 @@ export const lessonsAPI = {
 
 // Progress
 export const progressAPI = {
-  getUserProgress: (userId) => api.get(`/api/progress/user/${userId}`),
-  getLessonProgress: (userId, lessonId) => api.get(`/api/progress/user/${userId}/lesson/${lessonId}`),
-  startLesson: (userId, lessonId) => api.post('/api/progress/start', { user_id: userId, lesson_id: lessonId }),
-  submitQuiz: (data) => api.post('/api/progress/quiz', data),
-  submitSummary: (data) => api.post('/api/progress/summary', data),
-  completeLesson: (data) => api.post('/api/progress/complete', data),
-  getQuiz: (lessonId) => api.get(`/api/lessons/${lessonId}/quiz`),
+  getUserProgress: (userId) => api.get(`/api/progress/${userId}`),
+  getLessonProgress: (userId, lessonId) => api.get(`/api/progress/${userId}/lessons/${lessonId}`),
+  startLesson: (userId, lessonId) => api.post(`/api/progress/${userId}/lessons/${lessonId}/start`),
+  submitQuiz: (userId, lessonId, answers) => api.put(`/api/progress/${userId}/lessons/${lessonId}/quiz`, { answers }),
+  submitSummary: (userId, lessonId, summaryText) => api.put(`/api/progress/${userId}/lessons/${lessonId}/summary`, { summary_text: summaryText }),
+  completeLesson: (userId, lessonId) => api.put(`/api/progress/${userId}/lessons/${lessonId}/complete`),
+  getQuiz: (userId, lessonId) => api.get(`/api/progress/${userId}/lessons/${lessonId}/quiz`),
 };
 
 // Assignments
 export const assignmentsAPI = {
-  getAssignments: (userId) => api.get(`/api/assignments/user/${userId}`),
-  getAllAssignments: () => api.get('/api/assignments'),
+  getAssignments: (userId) => api.get(`/api/assignments/${userId}`),
+  getAllAssignments: () => api.get('/api/assignments/all'),
   createAssignment: (data) => api.post('/api/assignments', data),
   updateAssignment: (id, data) => api.put(`/api/assignments/${id}`, data),
   deleteAssignment: (id) => api.delete(`/api/assignments/${id}`),
@@ -72,10 +72,10 @@ export const assignmentsAPI = {
 // Leaderboard
 export const leaderboardAPI = {
   getLeaderboard: () => api.get('/api/leaderboard'),
-  getDeptLeaderboard: (dept) => api.get(`/api/leaderboard/department/${dept}`),
-  getTeamReport: (dept) => api.get(`/api/reports/team/${dept}`),
-  getUserBadges: (userId) => api.get(`/api/badges/user/${userId}`),
-  getAllBadges: () => api.get('/api/badges'),
+  getDeptLeaderboard: (dept) => api.get(`/api/leaderboard/${dept}`),
+  getTeamReport: (dept) => api.get(`/api/leaderboard/reports/team/${dept}`),
+  getUserBadges: (userId) => api.get(`/api/leaderboard/badges/${userId}`),
+  getAllBadges: () => api.get('/api/leaderboard/badges'),
 };
 
 export default api;

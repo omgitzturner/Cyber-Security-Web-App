@@ -2,37 +2,54 @@ import { useState } from 'react';
 import {
   Box, Typography, Paper, Button, Radio, RadioGroup,
   FormControlLabel, FormControl, LinearProgress, Chip,
-  Alert, Divider,
+  Alert, Divider, CircularProgress,
 } from '@mui/material';
 import { CheckCircle, Cancel, Replay } from '@mui/icons-material';
+import { progressAPI } from '../../services/api.js';
 
 export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed }) {
   const questions = quizData?.questions || [];
   const [currentIdx, setCurrentIdx] = useState(0);
+  // answers stored as index (int) for MC, boolean for T/F
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [score, setScore] = useState(0);
   const [passed, setPassed] = useState(false);
+  const [results, setResults] = useState([]);
+  const [error, setError] = useState('');
 
   const handleAnswer = (value) => {
-    setAnswers((prev) => ({ ...prev, [currentIdx]: value }));
+    const q = questions[currentIdx];
+    const type = q.type || (q.options ? 'multiple_choice' : 'true_false');
+    let parsed;
+    if (type === 'true_false') {
+      parsed = value === 'true';
+    } else {
+      // value is the option string; store index
+      parsed = q.options ? q.options.indexOf(value) : parseInt(value, 10);
+    }
+    setAnswers((prev) => ({ ...prev, [currentIdx]: parsed }));
   };
 
-  const handleSubmit = () => {
-    let correct = 0;
-    questions.forEach((q, idx) => {
-      const userAnswer = answers[idx];
-      const correctAnswer = q.correct_answer ?? q.answer ?? q.correct;
-      if (userAnswer !== undefined && String(userAnswer) === String(correctAnswer)) {
-        correct++;
-      }
-    });
-    const pct = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
-    setScore(pct);
-    const didPass = pct >= 80;
-    setPassed(didPass);
-    setSubmitted(true);
-    if (didPass && onPassed) onPassed(pct);
+  const handleSubmit = async () => {
+    // Build answers array in order
+    const answersArray = questions.map((_, idx) => (answers[idx] !== undefined ? answers[idx] : null));
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await progressAPI.submitQuiz(userId, lessonId, answersArray);
+      const { score: backendScore, passed: backendPassed, results: backendResults } = res.data;
+      setScore(backendScore);
+      setPassed(backendPassed);
+      setResults(backendResults || []);
+      setSubmitted(true);
+      if (backendPassed && onPassed) onPassed(backendScore);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to submit quiz. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleRetake = () => {
@@ -41,6 +58,8 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
     setSubmitted(false);
     setScore(0);
     setPassed(false);
+    setResults([]);
+    setError('');
     if (onFailed) onFailed();
   };
 
@@ -48,7 +67,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="text.secondary">No quiz questions available.</Typography>
-        <Button variant="contained" sx={{ mt: 2 }} onClick={onPassed}>
+        <Button variant="contained" sx={{ mt: 2 }} onClick={() => onPassed && onPassed(100)}>
           Continue to Summary
         </Button>
       </Paper>
@@ -84,16 +103,26 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
           Answer Review
         </Typography>
         {questions.map((q, idx) => {
-          const userAnswer = answers[idx];
-          const correctAnswer = q.correct_answer ?? q.answer ?? q.correct;
-          const isCorrect = String(userAnswer) === String(correctAnswer);
+          const result = results[idx];
+          const isCorrect = result?.correct ?? false;
+          const correctAnswer = result?.correct_answer;
+          const userAnswerRaw = answers[idx];
+          const type = q.type || (q.options ? 'multiple_choice' : 'true_false');
+          const userAnswerDisplay = type === 'true_false'
+            ? (userAnswerRaw === true ? 'True' : userAnswerRaw === false ? 'False' : 'Not answered')
+            : (q.options && userAnswerRaw !== null && userAnswerRaw !== undefined
+                ? q.options[userAnswerRaw] ?? 'Not answered'
+                : 'Not answered');
+          const correctAnswerDisplay = type === 'true_false'
+            ? (correctAnswer === true ? 'True' : 'False')
+            : (q.options && correctAnswer !== null && correctAnswer !== undefined
+                ? q.options[correctAnswer] ?? String(correctAnswer)
+                : String(correctAnswer));
           return (
             <Box
               key={idx}
               sx={{
-                mb: 2,
-                p: 2,
-                borderRadius: 1,
+                mb: 2, p: 2, borderRadius: 1,
                 bgcolor: isCorrect ? 'success.50' : 'error.50',
                 border: `1px solid ${isCorrect ? '#a5d6a7' : '#ef9a9a'}`,
               }}
@@ -102,11 +131,16 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
                 Q{idx + 1}: {q.question}
               </Typography>
               <Typography variant="body2" color={isCorrect ? 'success.main' : 'error.main'}>
-                Your answer: {userAnswer ?? 'Not answered'} {isCorrect ? '✓' : '✗'}
+                Your answer: {userAnswerDisplay} {isCorrect ? '✓' : '✗'}
               </Typography>
               {!isCorrect && (
                 <Typography variant="body2" color="success.main">
-                  Correct answer: {String(correctAnswer)}
+                  Correct answer: {correctAnswerDisplay}
+                </Typography>
+              )}
+              {result?.explanation && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontStyle: 'italic' }}>
+                  {result.explanation}
                 </Typography>
               )}
             </Box>
@@ -120,7 +154,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
             </Button>
           )}
           {passed && (
-            <Button variant="contained" size="large" onClick={onPassed} sx={{ fontWeight: 600 }}>
+            <Button variant="contained" size="large" onClick={() => onPassed && onPassed(score)} sx={{ fontWeight: 600 }}>
               Continue to Summary →
             </Button>
           )}
@@ -131,9 +165,20 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
 
   const question = questions[currentIdx];
   const questionType = question.type || (question.options ? 'multiple_choice' : 'true_false');
+  // Display value for radio group
+  const currentAnswerRaw = answers[currentIdx];
+  let currentDisplayValue = '';
+  if (currentAnswerRaw !== undefined) {
+    if (questionType === 'true_false') {
+      currentDisplayValue = currentAnswerRaw === true ? 'true' : 'false';
+    } else {
+      currentDisplayValue = question.options ? (question.options[currentAnswerRaw] ?? '') : '';
+    }
+  }
 
   return (
     <Paper sx={{ p: 4 }}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2" color="text.secondary">
@@ -158,7 +203,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
 
       <FormControl component="fieldset" fullWidth>
         <RadioGroup
-          value={answers[currentIdx] ?? ''}
+          value={currentDisplayValue}
           onChange={(e) => handleAnswer(e.target.value)}
         >
           {questionType === 'true_false' ? (
@@ -169,7 +214,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
                 label="True"
                 sx={{
                   mb: 1, p: 1, borderRadius: 1, border: '1px solid #e0e0e0',
-                  bgcolor: answers[currentIdx] === 'true' ? 'primary.50' : 'transparent',
+                  bgcolor: currentDisplayValue === 'true' ? 'primary.50' : 'transparent',
                 }}
               />
               <FormControlLabel
@@ -178,7 +223,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
                 label="False"
                 sx={{
                   mb: 1, p: 1, borderRadius: 1, border: '1px solid #e0e0e0',
-                  bgcolor: answers[currentIdx] === 'false' ? 'primary.50' : 'transparent',
+                  bgcolor: currentDisplayValue === 'false' ? 'primary.50' : 'transparent',
                 }}
               />
             </>
@@ -191,7 +236,7 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
                 label={option}
                 sx={{
                   mb: 1, p: 1, borderRadius: 1, border: '1px solid #e0e0e0',
-                  bgcolor: answers[currentIdx] === option ? 'primary.50' : 'transparent',
+                  bgcolor: currentDisplayValue === option ? 'primary.50' : 'transparent',
                 }}
               />
             ))
@@ -226,10 +271,10 @@ export default function Quiz({ quizData, lessonId, userId, onPassed, onFailed })
             variant="contained"
             color="success"
             onClick={handleSubmit}
-            disabled={answers[currentIdx] === undefined}
+            disabled={answers[currentIdx] === undefined || submitting}
             sx={{ fontWeight: 600 }}
           >
-            Submit Quiz
+            {submitting ? <CircularProgress size={20} color="inherit" /> : 'Submit Quiz'}
           </Button>
         )}
       </Box>

@@ -87,7 +87,7 @@ export default function LessonAssignment() {
       await Promise.all(
         selectedLessons.flatMap((lessonId) =>
           recipientIds.map((userId) =>
-            assignmentsAPI.createAssignment({ lesson_id: lessonId, user_id: userId, due_date: deadline })
+            assignmentsAPI.createAssignment({ lesson_id: lessonId, assigned_to_user_id: userId, deadline: deadline || null })
           )
         )
       );

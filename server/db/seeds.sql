@@ -138,27 +138,12 @@ SELECT
 FROM lessons l
 ON CONFLICT DO NOTHING;
 
--- Track badges
+-- Track badges (names prefixed with track identifier for ILIKE lookup in progress route)
 INSERT INTO badges (name, description, badge_type, requirement_id) VALUES
-  ('Phishing Defence Expert',      'Awarded for completing all four lessons in the Phishing track.',            'track',  NULL),
-  ('Password Security Pro',        'Awarded for completing all four lessons in the Passwords track.',           'track',  NULL),
-  ('Data Guardian',                'Awarded for completing all four lessons in the Data Protection track.',     'track',  NULL),
-  ('Social Engineering Defender',  'Awarded for completing all four lessons in the Social Engineering track.',  'track',  NULL)
-ON CONFLICT DO NOTHING;
-
--- Update track badge names to include the track identifier for programmatic lookup
-UPDATE badges SET name = 'Phishing Defence Expert'     WHERE badge_type = 'track' AND name = 'Phishing Defence Expert';
-UPDATE badges SET name = 'passwords Password Security Pro'    WHERE badge_type = 'track' AND name = 'Password Security Pro';
-UPDATE badges SET name = 'data_protection Data Guardian'      WHERE badge_type = 'track' AND name = 'Data Guardian';
-UPDATE badges SET name = 'social_engineering Social Engineering Defender' WHERE badge_type = 'track' AND name = 'Social Engineering Defender';
-
--- Re-insert with proper naming convention for ILIKE lookup used in progress route
-DELETE FROM badges WHERE badge_type = 'track';
-INSERT INTO badges (name, description, badge_type, requirement_id) VALUES
-  ('phishing Phishing Defence Expert',                          'Awarded for completing all four lessons in the Phishing track.',            'track', NULL),
-  ('passwords Password Security Pro',                           'Awarded for completing all four lessons in the Passwords track.',           'track', NULL),
-  ('data_protection Data Guardian',                             'Awarded for completing all four lessons in the Data Protection track.',     'track', NULL),
-  ('social_engineering Social Engineering Defender',            'Awarded for completing all four lessons in the Social Engineering track.',  'track', NULL)
+  ('phishing Phishing Defence Expert',                         'Awarded for completing all four lessons in the Phishing track.',            'track', NULL),
+  ('passwords Password Security Pro',                          'Awarded for completing all four lessons in the Passwords track.',           'track', NULL),
+  ('data_protection Data Guardian',                            'Awarded for completing all four lessons in the Data Protection track.',     'track', NULL),
+  ('social_engineering Social Engineering Defender',           'Awarded for completing all four lessons in the Social Engineering track.',  'track', NULL)
 ON CONFLICT DO NOTHING;
 
 -- Master badge
