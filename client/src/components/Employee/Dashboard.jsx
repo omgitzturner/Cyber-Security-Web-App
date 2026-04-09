@@ -6,7 +6,7 @@ import {
   MenuItem, Divider, CircularProgress, Alert, Paper,
 } from '@mui/material';
 import {
-  Security, AccountCircle, Logout, School, EmojiEvents,
+  AccountCircle, Logout, School, EmojiEvents,
   CheckCircle, Assignment, TrendingUp,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -75,9 +75,9 @@ export default function Dashboard() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={2}>
         <Toolbar>
-          <Security sx={{ mr: 1.5 }} />
+          <Box component="img" src="/cybercy-logo.svg" alt="CyberCy" sx={{ height: 36, mr: 1.5 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
-            Cyber Security Training
+            CyberCy
           </Typography>
           {(user?.role === 'admin' || user?.role === 'manager') && (
             <Button color="inherit" component={Link} to="/admin" sx={{ mr: 1 }}>

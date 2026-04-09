@@ -4,7 +4,7 @@ import {
   AppBar, Toolbar, Typography, Box, Tabs, Tab,
   IconButton, Menu, MenuItem, Divider,
 } from '@mui/material';
-import { Security, AccountCircle, Logout } from '@mui/icons-material';
+import { AccountCircle, Logout } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminDashboard from '../components/Admin/AdminDashboard.jsx';
 import UserManagement from '../components/Admin/UserManagement.jsx';
@@ -26,9 +26,9 @@ export default function AdminPage() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={2}>
         <Toolbar>
-          <Security sx={{ mr: 1.5 }} />
+          <Box component="img" src="/cybercy-logo.svg" alt="CyberCy" sx={{ height: 36, mr: 1.5 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
-            Cyber Security Training — Admin
+            CyberCy — Admin
           </Typography>
           <IconButton color="inherit" component={Link} to="/dashboard" sx={{ mr: 1 }}>
             <Typography variant="body2">Dashboard</Typography>

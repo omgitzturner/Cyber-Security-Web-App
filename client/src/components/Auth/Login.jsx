@@ -4,7 +4,7 @@ import {
   Box, Card, CardContent, TextField, Button, Typography,
   Alert, InputAdornment, IconButton, CircularProgress, Link,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Security } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function Login() {
@@ -48,9 +48,9 @@ export default function Login() {
       <Card sx={{ width: '100%', maxWidth: 420, mx: 2, boxShadow: 8 }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Security sx={{ fontSize: 56, color: 'primary.main', mb: 1 }} />
+            <Box component="img" src="/cybercy-logo.svg" alt="CyberCy Logo" sx={{ height: 72, mb: 1 }} />
             <Typography variant="h5" fontWeight={700} color="primary.main">
-              Cyber Security Training
+              CyberCy
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5}>
               Sign in to your account

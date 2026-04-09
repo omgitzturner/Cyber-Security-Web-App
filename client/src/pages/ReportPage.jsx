@@ -4,7 +4,7 @@ import {
   AppBar, Toolbar, Typography, Box, IconButton, Menu,
   MenuItem, Divider, Tabs, Tab,
 } from '@mui/material';
-import { Security, AccountCircle, Logout } from '@mui/icons-material';
+import { AccountCircle, Logout } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext.jsx';
 import TeamReports from '../components/Admin/TeamReports.jsx';
 import Leaderboard from '../components/Employee/Leaderboard.jsx';
@@ -24,7 +24,7 @@ export default function ReportPage() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={2}>
         <Toolbar>
-          <Security sx={{ mr: 1.5 }} />
+          <Box component="img" src="/cybercy-logo.svg" alt="CyberCy" sx={{ height: 36, mr: 1.5 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
             Reports & Analytics
           </Typography>
