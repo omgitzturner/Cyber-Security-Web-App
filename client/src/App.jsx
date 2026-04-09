@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext.jsx';
 import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
 import Login from './components/Auth/Login.jsx';
+import Register from './components/Auth/Register.jsx';
 import Dashboard from './components/Employee/Dashboard.jsx';
 import LessonPage from './pages/LessonPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
@@ -28,6 +29,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
             element={

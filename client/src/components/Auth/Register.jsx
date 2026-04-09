@@ -7,28 +7,42 @@ import {
 import { Visibility, VisibilityOff, Security } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-export default function Login() {
+const MIN_PASSWORD_LENGTH = 8;
+
+export default function Register() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [department, setDepartment] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email || !password) {
-      setError('Please enter your email and password.');
+    if (!fullName || !email || !password || !confirmPassword) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return;
     }
     setLoading(true);
     try {
-      await login(email, password);
+      await register(email, password, fullName, department);
       navigate('/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.error || 'Login failed. Please check your credentials.';
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please try again.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -53,7 +67,7 @@ export default function Login() {
               Cyber Security Training
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5}>
-              Sign in to your account
+              Create your account
             </Typography>
           </Box>
 
@@ -65,6 +79,16 @@ export default function Login() {
 
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
+              label="Full Name"
+              fullWidth
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              sx={{ mb: 2 }}
+              autoComplete="name"
+              autoFocus
+            />
+            <TextField
               label="Email Address"
               type="email"
               fullWidth
@@ -73,7 +97,14 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
               autoComplete="email"
-              autoFocus
+            />
+            <TextField
+              label="Department (optional)"
+              fullWidth
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              sx={{ mb: 2 }}
+              autoComplete="organization"
             />
             <TextField
               label="Password"
@@ -82,13 +113,32 @@ export default function Login() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 3 }}
-              autoComplete="current-password"
+              sx={{ mb: 2 }}
+              autoComplete="new-password"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              label="Confirm Password"
+              type={showConfirm ? 'text' : 'password'}
+              fullWidth
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ mb: 3 }}
+              autoComplete="new-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirm(!showConfirm)} edge="end">
+                      {showConfirm ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -102,14 +152,14 @@ export default function Login() {
               disabled={loading}
               sx={{ py: 1.5, fontWeight: 600 }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
             </Button>
           </Box>
 
           <Typography variant="body2" align="center" sx={{ mt: 2, color: 'text.secondary' }}>
-            Don&apos;t have an account?{' '}
-            <Link component={RouterLink} to="/register" underline="hover">
-              Create one
+            Already have an account?{' '}
+            <Link component={RouterLink} to="/login" underline="hover">
+              Sign in
             </Link>
           </Typography>
         </CardContent>
