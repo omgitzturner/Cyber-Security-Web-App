@@ -24,6 +24,16 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  const register = async (email, password, full_name, department) => {
+    const response = await authAPI.register({ email, password, full_name, department: department || undefined });
+    const { accessToken, user: newUser } = response.data;
+    localStorage.setItem('token', accessToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setToken(accessToken);
+    setUser(newUser);
+    return newUser;
+  };
+
   const login = async (email, password) => {
     const response = await authAPI.login(email, password);
     const { accessToken, user: newUser } = response.data;
@@ -46,6 +56,7 @@ export function AuthProvider({ children }) {
     token,
     loading,
     login,
+    register,
     logout,
     isAuthenticated: !!token && !!user,
   };
